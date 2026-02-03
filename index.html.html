@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayPal QR Ticket System (Demo)</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background: #0070ba;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    .qr {
+      width: 80px;
+    }
+    .paid {
+      color: green;
+      font-weight: bold;
+    }
+    .unpaid {
+      color: red;
+      font-weight: bold;
+    }
+    .used {
+      background: #ddd;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>PayPal QR Ticket System (Demo)</h1>
+    <p style="text-align:center;">This is a dummy automatic system for testing fraud prevention.</p>
+
+    <h2>1. Register Attendee</h2>
+
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="phone" placeholder="Phone" required />
+      <input type="number" id="amount" placeholder="Amount (€)" required />
+      <button type="submit">Generate Ticket</button>
+    </form>
+
+    <h2>2. Attendee List</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Ticket ID</th>
+          <th>PayPal Link</th>
+          <th>QR Code</th>
+          <th>Status</th>
+          <th>Entry</th>
+        </tr>
+      </thead>
+      <tbody id="ticketTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    /* CONFIG */
+    const PAYPAL_NAME = "YourPayPalName"; // CHANGE THIS
+
+    let tickets = [];
+
+    function generateID() {
+      return "EVT-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+    }
+
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const amount = document.getElementById("amount").value;
+
+      const ticketID = generateID();
+
+      const paypalLink = `https://www.paypal.me/${PAYPAL_NAME}/${amount}?note=${ticketID}`;
+
+      const ticket = {
+        name,
+        email,
+        phone,
+        amount,
+        ticketID,
+        paypalLink,
+        paid: false,
+        used: false
+      };
+
+      tickets.push(ticket);
+      renderTable();
+
+      this.reset();
+    });
+
+    function renderTable() {
+      const tbody = document.getElementById("ticketTable");
+      tbody.innerHTML = "";
+
+      tickets.forEach((ticket, index) => {
+        const tr = document.createElement("tr");
+
+        if (ticket.used) tr.classList.add("used");
+
+        tr.innerHTML = `
+          <td>${ticket.name}</td>
+          <td>${ticket.ticketID}</td>
+          <td><a href="${ticket.paypalLink}" target="_blank">Pay</a></td>
+          <td><canvas id="qr-${index}" class="qr"></canvas></td>
+          <td class="${ticket.paid ? "paid" : "unpaid"}">
+            ${ticket.paid ? "PAID" : "UNPAID"}
+          </td>
+          <td>
+            <button onclick="markUsed(${index})">Enter</button>
+            <button onclick="markPaid(${index})">Confirm Pay</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+
+        QRCode.toCanvas(
+          document.getElementById(`qr-${index}`),
+          ticket.paypalLink,
+          { width: 80 }
+        );
+      });
+    }
+
+    /* SIMULATION FUNCTIONS */
+
+    function markPaid(index) {
+      tickets[index].paid = true;
+      renderTable();
+    }
+
+    function markUsed(index) {
+      if (!tickets[index].paid) {
+        alert("Payment not confirmed!");
+        return;
+      }
+
+      if (tickets[index].used) {
+        alert("Ticket already used!");
+        return;
+      }
+
+      tickets[index].used = true;
+      renderTable();
+    }
+  </script>
+
+</body>
+</html>
