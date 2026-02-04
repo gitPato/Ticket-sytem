@@ -3,83 +3,146 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PayPal QR Ticket System (Demo)</title>
+  <title>Valentine Gala Ticket System</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      padding: 20px;
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #3a0a0a, #8b0000, #1a0000);
+      color: #fff;
+      min-height: 100vh;
     }
+
     h1, h2 {
+      font-family: "Playfair Display", serif;
       text-align: center;
+      letter-spacing: 1px;
     }
+
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+        url("https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1600&q=80");
+      background-size: cover;
+      background-position: center;
+      padding: 80px 20px;
+      text-align: center;
+      border-bottom: 3px solid #d4af37;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      color: #ffd700;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #f5c6c6;
+    }
+
     .container {
-      max-width: 900px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 1000px;
+      margin: -40px auto 40px;
+      background: rgba(20, 0, 0, 0.9);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
     }
+
     form {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
     }
-    input, button {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+
+    input {
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
       font-size: 14px;
     }
+
     button {
-      background: #0070ba;
-      color: white;
-      cursor: pointer;
+      padding: 12px;
+      border-radius: 8px;
       border: none;
+      background: linear-gradient(135deg, #d4af37, #ffd700);
+      color: #3a0000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
     }
+
     button:hover {
+      transform: scale(1.05);
       opacity: 0.9;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 12px;
+      overflow: hidden;
     }
+
     th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
       font-size: 14px;
     }
+
     th {
-      background: #f0f0f0;
+      background: rgba(212,175,55,0.3);
+      color: #ffd700;
     }
+
+    tr:nth-child(even) {
+      background: rgba(255,255,255,0.05);
+    }
+
     .qr {
-      width: 80px;
+      width: 70px;
     }
+
     .paid {
-      color: green;
+      color: #00ff99;
       font-weight: bold;
     }
+
     .unpaid {
-      color: red;
+      color: #ff5c5c;
       font-weight: bold;
     }
+
     .used {
-      background: #ddd;
+      background: rgba(255,255,255,0.1) !important;
+      opacity: 0.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #f5c6c6;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Valentine's Event Frankfurt</h1>
-    <p style="text-align:center;">This is a dummy automatic system for testing fraud prevention.</p>
+  <div class="hero">
+    <h1>Valentine's Gala Dinner 2026</h1>
+    <p>Elegant • Romantic • Exclusive Experience</p>
+  </div>
 
-    <h2>1. Register Attendee</h2>
+  <div class="container">
+
+    <h2>Register & Generate Ticket</h2>
 
     <form id="registerForm">
       <input type="text" id="name" placeholder="Full Name" required />
@@ -89,15 +152,15 @@
       <button type="submit">Generate Ticket</button>
     </form>
 
-    <h2>2. Attendee List</h2>
+    <h2>Guest List</h2>
 
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Ticket ID</th>
-          <th>PayPal Link</th>
-          <th>QR Code</th>
+          <th>Payment</th>
+          <th>QR</th>
           <th>Status</th>
           <th>Entry</th>
         </tr>
@@ -106,6 +169,10 @@
     </table>
   </div>
 
+  <footer>
+    © 2026 Megsquisite Events • Valentine Gala Dinner
+  </footer>
+
   <script>
     /* CONFIG */
     const PAYPAL_NAME = "YourPayPalName"; // CHANGE THIS
@@ -113,7 +180,7 @@
     let tickets = [];
 
     function generateID() {
-      return "EVT-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+      return "VAL" + Date.now() + Math.floor(Math.random() * 1000);
     }
 
     document.getElementById("registerForm").addEventListener("submit", function(e) {
@@ -157,14 +224,14 @@
         tr.innerHTML = `
           <td>${ticket.name}</td>
           <td>${ticket.ticketID}</td>
-          <td><a href="${ticket.paypalLink}" target="_blank">Pay</a></td>
+          <td><a href="${ticket.paypalLink}" target="_blank" style="color:#ffd700">Pay</a></td>
           <td><canvas id="qr-${index}" class="qr"></canvas></td>
           <td class="${ticket.paid ? "paid" : "unpaid"}">
             ${ticket.paid ? "PAID" : "UNPAID"}
           </td>
           <td>
             <button onclick="markUsed(${index})">Enter</button>
-            <button onclick="markPaid(${index})">Confirm Pay</button>
+            <button onclick="markPaid(${index})">Confirm</button>
           </td>
         `;
 
@@ -173,12 +240,10 @@
         QRCode.toCanvas(
           document.getElementById(`qr-${index}`),
           ticket.paypalLink,
-          { width: 80 }
+          { width: 70 }
         );
       });
     }
-
-    /* SIMULATION FUNCTIONS */
 
     function markPaid(index) {
       tickets[index].paid = true;
@@ -203,5 +268,4 @@
 
 </body>
 </html>
-
 
